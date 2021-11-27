@@ -40,9 +40,9 @@ import {
 	Vector4,
 	VectorKeyframeTrack,
 	sRGBEncoding
-} from '../../../build/three.module.js';
-import * as fflate from '../libs/fflate.module.js';
-import { NURBSCurve } from '../curves/NURBSCurve.js';
+} from '../build/three.module.js';
+import * as fflate from './fflate.module.js';
+import { NURBSCurve } from './NURBSCurve.js';
 
 /**
  * Loader loads FBX file and generates Group representing FBX scene.
@@ -1421,7 +1421,7 @@ class FBXTreeParser {
 
 			for ( const nodeID in BindPoseNode ) {
 
-				if ( BindPoseNode[ nodeID ].attrType === 'BindPose' ) {
+				if ( BindPoseNode[ nodeID ].attrType === 'BindPose' && BindPoseNode[ nodeID ].NbPoseNodes > 0 ) {
 
 					const poseNodes = BindPoseNode[ nodeID ].PoseNode;
 
