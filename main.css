@@ -61,10 +61,6 @@ a, button, input, select {
 	background-color: rgb(7, 107, 153);
 }
 
-#phrase {
-	font-size: 50px;
-}
-
 #overlay button {
 	background: transparent;
 	border: 0;
