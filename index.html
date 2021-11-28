@@ -19,6 +19,7 @@
 			import { OrbitControls } from './jsm/OrbitControls.js';
             import Stats from './jsm/stats.module.js';
 			import { FBXLoader } from './jsm/FBXLoader.js';
+			import { GLTFLoader } from './jsm/GLTFLoader.js';
 
             let camera, scene, renderer, stats;
 
@@ -34,8 +35,8 @@
 				const container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.set( 100, 200, 300 );
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 15000 );
+				camera.position.set( 4700, 5600, 9500 );
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
@@ -56,24 +57,19 @@
 
 				// scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) ); 
 
-				// ground
-				const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
-				mesh.rotation.x = - Math.PI / 2;
-				mesh.receiveShadow = true;
-				scene.add( mesh );
 
 				const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
 				grid.material.opacity = 0.2;
 				grid.material.transparent = true;
 				scene.add( grid );
 
-				// model
-				const loader = new FBXLoader();
-				loader.load( './models/verre.fbx', function ( object ) {
+				// gare
+				const station_loader = new FBXLoader();
+				station_loader.load( './models/garefbx.fbx', function ( station ) {
 
-					mixer = new THREE.AnimationMixer( object );
+					// mixer = new THREE.AnimationMixer( station );
 					
-					object.traverse( function ( child ) {
+					station.traverse( function ( child ) {
 
 						if ( child.isMesh ) {
 
@@ -84,7 +80,28 @@
 
 					} );
 
-					scene.add( object );
+					scene.add( station );
+
+				} );
+
+				// gare
+				const train_loader = new FBXLoader();
+				train_loader.load( './models/train2.fbx', function ( train ) {
+
+					// mixer = new THREE.AnimationMixer( train );
+					
+					train.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					scene.add( train );
 
 				} );
 
@@ -122,12 +139,12 @@
 				requestAnimationFrame( animate );
 
 				const delta = clock.getDelta();
-
 				if ( mixer ) mixer.update( delta );
 
 				renderer.render( scene, camera );
-
 				stats.update();
+
+				// console.log(camera.position);
 
 			}
 
