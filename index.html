@@ -42,6 +42,28 @@
 				scene.background = new THREE.Color( 0xa0a0a0 );
 				// scene.fog = new THREE.Fog( 0xa0a0a0, 200, 1000 ); //brouillard
 
+
+				const manager = new THREE.LoadingManager();
+				manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+					console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+				};
+
+				manager.onLoad = function ( ) {
+					console.log( 'Loading complete!');
+				};
+
+
+				manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+					console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+				};
+
+				manager.onError = function ( url ) {
+					console.log( 'There was an error loading ' + url );
+				};
+
+
+
+
 				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
 				hemiLight.position.set( 0, 200, 0 );
 				scene.add( hemiLight );
@@ -64,7 +86,7 @@
 				scene.add( grid );
 
 				// gare
-				const station_loader = new FBXLoader();
+				const station_loader = new FBXLoader( manager );
 				station_loader.load( './models/garefbx.fbx', function ( station ) {
 
 					// mixer = new THREE.AnimationMixer( station );
@@ -85,7 +107,7 @@
 				} );
 
 				// gare
-				const train_loader = new FBXLoader();
+				const train_loader = new FBXLoader( manager );
 				train_loader.load( './models/train2.fbx', function ( train ) {
 
 					// mixer = new THREE.AnimationMixer( train );
