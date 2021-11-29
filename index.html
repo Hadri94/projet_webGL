@@ -39,7 +39,7 @@
 				document.body.appendChild( container );
 
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 15000 );
-				camera.position.set( 4700, 5600, 9500 );
+				camera.position.set( 2000, 3000, 15000 );
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
@@ -166,7 +166,8 @@
 			function buildGui() {
 				gui = new GUI();
 
-				const camera_folder = gui.addFolder('camera');
+				const camera_folder = gui.addFolder('Mode de caméra');
+				const camera_setting = gui.addFolder('Paramètres caméra');
 
 
 				const params = {
@@ -184,22 +185,61 @@
 						
 						controls.target.set( 0, 100, 0 );
 						controls.update();
-					}
+					},
+
+					'Vitesse de déplacement': controls.constructor.name == 'FirstPersonControls' ? 1000 : null,
+					'Vitesse de rotation': controls.constructor.name == 'FirstPersonControls' ? 0.05 : null,
+					'Lévitation': controls.constructor.name == 'FirstPersonControls' ? false : null,
+					'Mode vertical': controls.constructor.name == 'FirstPersonControls' ? true : null,
 				};
 
 				camera_folder.add(params, 'view FPS');
 				camera_folder.add(params, 'view orbit');
 
+				camera_setting.add(params, 'Vitesse de déplacement', 1000, 5000).onChange(function(val) {
+					controls.movementSpeed = val;
+					render();
+				});;
+				camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.075).onChange(function(val) {
+					controls.lookSpeed = val;
+					render();
+				});
+				camera_setting.add(params, 'Lévitation').onChange(function(val) {
+					controls.noFly = val;
+					render();
+				});;
+				camera_setting.add(params, 'Mode vertical').onChange(function(val) {
+					controls.lookVertical = val;
+					render();
+				});;
+
+
+
 				gui.open();
 			}
 			//
 
+			let i = 1;
 			function animate() {
 
 				requestAnimationFrame( animate );
 
+				document.addEventListener('keydown', function(event) {
+					if(event.key === "Delete" && controls.activeLook == false) {
+						controls.activeLook = true;
+					} else if(event.key === "Delete" && controls.activeLook == true) {
+						controls.activeLook = false;
+
+					}
+				})
+
+
+
 				render();
-				// console.log(camera.position);
+				if(i == 1) {
+					console.log(controls.constructor.name);
+					i = 0;
+				}
 
 			}
 
