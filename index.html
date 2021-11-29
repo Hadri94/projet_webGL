@@ -21,18 +21,17 @@
 			import * as THREE from './build/three.module.js';
 			import { GUI } from './jsm/dat.gui.module.js';
 			import { OrbitControls } from './jsm/OrbitControls.js';
+			import { FirstPersonControls } from './jsm/FirstPersonControls.js';
             import Stats from './jsm/stats.module.js';
 			import { FBXLoader } from './jsm/FBXLoader.js';
 			import { GLTFLoader } from './jsm/GLTFLoader.js';
 
-            let camera, scene, renderer, stats;
-
+            let camera, scene, controls, renderer, stats;
+			let gui;
 			const clock = new THREE.Clock();
 
 			let mixer;
 
-			init();
-			animate();
 
 			function init() {
 
@@ -137,9 +136,14 @@
 				renderer.shadowMap.enabled = true;
 				container.appendChild( renderer.domElement );
 
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.target.set( 0, 100, 0 );
-				controls.update();
+
+				controls = new FirstPersonControls( camera, renderer.domElement );
+
+				controls.movementSpeed = 1000;
+				controls.lookSpeed = 0.05;
+				controls.noFly = false;
+				controls.lookVertical = true;
+
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -158,22 +162,62 @@
 
 			}
 
+
+			function buildGui() {
+				gui = new GUI();
+
+				const camera_folder = gui.addFolder('camera');
+
+
+				const params = {
+					'view FPS': function() {
+						controls.dispose()
+						controls = new FirstPersonControls( camera, renderer.domElement );
+						
+						controls.movementSpeed = 1000;
+						controls.lookSpeed = 0.05;
+						controls.noFly = false;
+						controls.lookVertical = true;
+					},
+					'view orbit': function() {
+						controls = new OrbitControls( camera, renderer.domElement );
+						
+						controls.target.set( 0, 100, 0 );
+						controls.update();
+					}
+				};
+
+				camera_folder.add(params, 'view FPS');
+				camera_folder.add(params, 'view orbit');
+
+				gui.open();
+			}
 			//
 
 			function animate() {
 
 				requestAnimationFrame( animate );
 
-				const delta = clock.getDelta();
-				if ( mixer ) mixer.update( delta );
-
-				renderer.render( scene, camera );
-				stats.update();
-
+				render();
 				// console.log(camera.position);
 
 			}
 
+			function render() {
+
+				const delta = clock.getDelta();
+
+				controls.update( delta );
+				if ( mixer ) mixer.update( delta );
+
+				renderer.render( scene, camera );
+
+				stats.update();
+			}
+
+			init();
+			buildGui();
+			animate();
 		</script>
 
 	</body>
