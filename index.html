@@ -32,13 +32,15 @@
 
 			let mixer;
 
+			let mod_view = "orbit";
+
 
 			function init() {
 
 				const container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 15000 );
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 20000 );
 				camera.position.set( 2000, 3000, 15000 );
 
 				scene = new THREE.Scene();
@@ -137,12 +139,10 @@
 				container.appendChild( renderer.domElement );
 
 
-				controls = new FirstPersonControls( camera, renderer.domElement );
-
-				controls.movementSpeed = 1000;
-				controls.lookSpeed = 0.05;
-				controls.noFly = false;
-				controls.lookVertical = true;
+				controls = new OrbitControls( camera, renderer.domElement );
+						
+				controls.target.set( 0, 100, 0 );
+				controls.update();
 
 
 				window.addEventListener( 'resize', onWindowResize );
@@ -166,80 +166,78 @@
 			function buildGui() {
 				gui = new GUI();
 
-				const camera_folder = gui.addFolder('Mode de caméra');
+				const camera_mode = gui.addFolder('Mode de caméra');
 				const camera_setting = gui.addFolder('Paramètres caméra');
 
 
 				const params = {
-					'view FPS': function() {
-						controls.dispose()
-						controls = new FirstPersonControls( camera, renderer.domElement );
-						
-						controls.movementSpeed = 1000;
-						controls.lookSpeed = 0.05;
-						controls.noFly = false;
-						controls.lookVertical = true;
-					},
-					'view orbit': function() {
-						controls = new OrbitControls( camera, renderer.domElement );
-						
-						controls.target.set( 0, 100, 0 );
-						controls.update();
-					},
+					'Vue spectateur': function() { switchViewMod("spectator"); },
+					'Vue fps': function() { switchViewMod("fps"); },
+					'Vue orbital': function() { switchViewMod("orbital"); },
 
-					'Vitesse de déplacement': controls.constructor.name == 'FirstPersonControls' ? 1000 : null,
-					'Vitesse de rotation': controls.constructor.name == 'FirstPersonControls' ? 0.05 : null,
-					'Lévitation': controls.constructor.name == 'FirstPersonControls' ? false : null,
-					'Mode vertical': controls.constructor.name == 'FirstPersonControls' ? true : null,
+					'Vitesse de déplacement': 1000,
+					'Vitesse de rotation': 0.05,
+					'Lévitation': false,
+					'Mode vertical': true,
 				};
 
-				camera_folder.add(params, 'view FPS');
-				camera_folder.add(params, 'view orbit');
+				camera_mode.add(params, 'Vue spectateur');
+				camera_mode.add(params, 'Vue fps');
+				camera_mode.add(params, 'Vue orbital');
+				
+				if(mod_view == 'spectator') {
+					camera_setting.add(params, 'Vitesse de déplacement', 1000, 5000).onChange(function(val) { controls.movementSpeed = val; render(); });
+					camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.075).onChange(function(val) {
+						controls.lookSpeed = val;
+						render();
+					});
+					camera_setting.add(params, 'Lévitation').onChange(function(val) {
+						controls.noFly = val;
+						render();
+					});;
+					camera_setting.add(params, 'Mode vertical').onChange(function(val) {
+						controls.lookVertical = val;
+						render();
+					});;
+				}
 
-				camera_setting.add(params, 'Vitesse de déplacement', 1000, 5000).onChange(function(val) {
-					controls.movementSpeed = val;
-					render();
-				});;
-				camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.075).onChange(function(val) {
-					controls.lookSpeed = val;
-					render();
-				});
-				camera_setting.add(params, 'Lévitation').onChange(function(val) {
-					controls.noFly = val;
-					render();
-				});;
-				camera_setting.add(params, 'Mode vertical').onChange(function(val) {
-					controls.lookVertical = val;
-					render();
-				});;
+				//Ouverture des dossiers 
+				camera_mode.open();
+				
 
-
-
-				gui.open();
 			}
 			//
 
-			let i = 1;
+			let x = false;
 			function animate() {
 
 				requestAnimationFrame( animate );
 
+
 				document.addEventListener('keydown', function(event) {
-					if(event.key === "Delete" && controls.activeLook == false) {
-						controls.activeLook = true;
-					} else if(event.key === "Delete" && controls.activeLook == true) {
-						controls.activeLook = false;
+					x = true;
+					
+					if(controls.constructor.name == 'FirstPersonControls') {
+						if(event.key === "Delete" && controls.activeLook == false) {
+							controls.activeLook = true;
+						} else if(event.key === "Delete" && controls.activeLook == true) {
+							controls.activeLook = false;
 
+						}
 					}
-				})
+	
+				});
+
+				document.addEventListener('keyup', function(event) {
+					if(x && event.key == 'Enter') {
+						console.log(camera.view);
+						x = false;
+					}
+				});
 
 
-
+				
 				render();
-				if(i == 1) {
-					console.log(controls.constructor.name);
-					i = 0;
-				}
 
 			}
 
@@ -253,6 +251,54 @@
 				renderer.render( scene, camera );
 
 				stats.update();
+			}
+
+
+			/////////
+
+
+			function switchViewMod(mod) {
+
+				controls.dispose() //supprime les anciens
+
+				switch (mod) {
+					case "spectator":
+						controls = new FirstPersonControls( camera, renderer.domElement );
+						
+						controls.movementSpeed = 1000;
+						controls.lookSpeed = 0.05;
+						controls.noFly = false;
+						controls.lookVertical = true;
+						
+						break;
+
+					case "fps":
+						controls = new FirstPersonControls( camera, renderer.domElement );
+						
+						controls.movementSpeed = 1000;
+						controls.lookSpeed = 0.05;
+						controls.noFly = false;
+						controls.lookVertical = false;
+
+						camera.position.set(-30, 265, 5300);
+						camera.rotateOnWorldAxis(new THREE.Vector3(0,-0.5,0), 90);
+						break;
+					
+					case "orbital":
+						controls = new OrbitControls( camera, renderer.domElement );
+						
+						controls.target.set( 0, 100, 0 );
+						controls.update();
+
+						break;
+				
+					default:
+						break;
+				}
+
+				gui.destroy();
+				mod_view = mod;
+				buildGui();
 			}
 
 			init();
