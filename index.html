@@ -41,7 +41,8 @@
 				document.body.appendChild( container );
 
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 20000 );
-				camera.position.set( 2000, 3000, 15000 );
+				camera.position.set( 0, 200, 15000 );
+				camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
@@ -141,8 +142,9 @@
 
 				controls = new OrbitControls( camera, renderer.domElement );
 						
-				controls.target.set( 0, 100, 0 );
+				controls.target.set( 0, 0, 0 );
 				controls.update();
+
 
 
 				window.addEventListener( 'resize', onWindowResize );
@@ -179,6 +181,7 @@
 					'Vitesse de rotation': 0.05,
 					'Lévitation': false,
 					'Mode vertical': true,
+
 				};
 
 				camera_mode.add(params, 'Vue spectateur');
@@ -186,19 +189,10 @@
 				camera_mode.add(params, 'Vue orbital');
 				
 				if(mod_view == 'spectator') {
-					camera_setting.add(params, 'Vitesse de déplacement', 1000, 5000).onChange(function(val) { controls.movementSpeed = val; render(); });
-					camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.075).onChange(function(val) {
-						controls.lookSpeed = val;
-						render();
-					});
-					camera_setting.add(params, 'Lévitation').onChange(function(val) {
-						controls.noFly = val;
-						render();
-					});;
-					camera_setting.add(params, 'Mode vertical').onChange(function(val) {
-						controls.lookVertical = val;
-						render();
-					});;
+					camera_setting.add(params, 'Vitesse de déplacement', 1000, 5000).onChange(function(val) { controls.movementSpeed = val;  });
+					camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.075).onChange(function(val) { controls.lookSpeed = val; });
+					camera_setting.add(params, 'Lévitation').onChange(function(val) { controls.noFly = val; });
+					camera_setting.add(params, 'Mode vertical').onChange(function(val) { controls.lookVertical = val; });
 				}
 
 				//Ouverture des dossiers 
@@ -208,16 +202,19 @@
 			}
 			//
 
-			let x = false;
+			let t = false;
 			function animate() {
 
 				requestAnimationFrame( animate );
 
 
+				if(mod_view == 'fps' && (camera.position.y < 200 || camera.position.y > 220) ) camera.position.y = 200;
+
+
 				document.addEventListener('keydown', function(event) {
-					x = true;
+					t = true;
 					
-					if(controls.constructor.name == 'FirstPersonControls') {
+					if(mod_view == 'fps') {
 						if(event.key === "Delete" && controls.activeLook == false) {
 							controls.activeLook = true;
 						} else if(event.key === "Delete" && controls.activeLook == true) {
@@ -229,9 +226,13 @@
 				});
 
 				document.addEventListener('keyup', function(event) {
-					if(x && event.key == 'Enter') {
-						console.log(camera.view);
-						x = false;
+					if(t && event.key == 'Enter') {
+						//Faire les choses que vous voulez faire à l'appuie d'entrer
+
+						camera.position.set(0, 200, 5300);
+						camera.rotation.y = -1.0;
+						console.log(camera); 
+						t = false;
 					}
 				});
 
@@ -265,29 +266,32 @@
 					case "spectator":
 						controls = new FirstPersonControls( camera, renderer.domElement );
 						
-						controls.movementSpeed = 1000;
+						controls.movementSpeed = 2000;
 						controls.lookSpeed = 0.05;
-						controls.noFly = false;
 						controls.lookVertical = true;
 						
 						break;
 
 					case "fps":
+						camera.position.set(0, 200, 5300);
+						camera.rotation.set(0, 0, 0);
+
 						controls = new FirstPersonControls( camera, renderer.domElement );
 						
-						controls.movementSpeed = 1000;
 						controls.lookSpeed = 0.05;
-						controls.noFly = false;
-						controls.lookVertical = false;
+						controls.movementSpeed = 750;
+						controls.lookVertical = true;
+						controls.constrainVertical = true;
+						controls.verticalMin = 1.0;
+						controls.verticalMax = 1.5;
 
-						camera.position.set(-30, 265, 5300);
-						camera.rotateOnWorldAxis(new THREE.Vector3(0,-0.5,0), 90);
+						
 						break;
 					
 					case "orbital":
 						controls = new OrbitControls( camera, renderer.domElement );
 						
-						controls.target.set( 0, 100, 0 );
+						controls.target.set( 0, 0, 0 );
 						controls.update();
 
 						break;
