@@ -38,16 +38,14 @@
 			//variable collision
 			let is_in = {
 				outside: true,
-				station: {
-					left: false,
-					right: false
-				},
+				station_left: false, 
+				station_right: false, 
 				balcony: false,
 
 				allFalse: function() {
 					this.outside = false,
-					this.station.left = false,
-					this.station.right = false,
+					this.station_left = false,
+					this.station_right = false,
 					this.balcony = false
 				},
 				reset: function() {
@@ -218,7 +216,7 @@
 				
 				if(mod_view == 'spectator') {
 					camera_setting.add(params, 'Vitesse de déplacement', 1000, 5000).onChange(function(val) { controls.movementSpeed = val;  });
-					camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.075).onChange(function(val) { controls.lookSpeed = val; });
+					camera_setting.add(params, 'Vitesse de rotation', 0.01, 0.1).onChange(function(val) { controls.lookSpeed = val; });
 					camera_setting.add(params, 'Lévitation').onChange(function(val) { controls.noFly = val; });
 					camera_setting.add(params, 'Mode vertical').onChange(function(val) { controls.lookVertical = val; });
 				}
@@ -236,25 +234,7 @@
 
 				requestAnimationFrame( animate );
 
-				//reste à la distance de 200 si en mode FPS et pas dans le balcon
-				if([
-					mod_view == 'fps',
-					!is_in.balcony,
-					(camera.position.y < 200 || camera.position.y > 220)
-				].every(elem => elem)
-				) {
-					camera.position.y = 200;
-				} 
-
-				//reste à la distance de 200 si en mode FPS et est dans le balcon
-				if([
-					mod_view == 'fps',
-					is_in.balcony,
-					(camera.position.y < 3000 || camera.position.y > 3020)
-				].every(elem => elem)
-				) {
-					camera.position.y = 3000;
-				}
+				
 
 
 				collisionFps();
@@ -274,7 +254,7 @@
 					if(one_time_enter && event.key == 'Enter') {
 						//Faire les choses que vous voulez faire à l'appuie d'entrer
 
-						console.log(is_in.station.left);
+						console.log(is_in.station_left);
 						console.log(is_in["station['left']"]);
 						console.log(camera.position); 
 						one_time_enter = false; //Ne pas toucher à ca
@@ -324,7 +304,7 @@
 
 						controls = new FirstPersonControls( camera, renderer.domElement );
 						
-						controls.lookSpeed = 0.075;
+						controls.lookSpeed = 0.1;
 						controls.movementSpeed = 500;
 						controls.lookVertical = true;
 						controls.constrainVertical = true;
@@ -353,7 +333,13 @@
 
 			function collisionFps() {
 				if(mod_view == 'fps') {
-					//Passage de dehors à la gare
+
+					if(is_in.station_left) console.log("left :"+is_in.station_left);
+					
+					if(is_in.station_right) console.log("right :"+is_in.station_right);
+					
+
+					//Passage de l'exterieur à la gare droite
 					if([
 						camera.position.z >= 2500,
 						camera.position.z <= 2550,
@@ -362,35 +348,62 @@
 
 					].every(elem => elem)
 					) {
-						is_in.set("station.left");
+						is_in.set("station_right");
 						camera.position.set(0, 250, 630);
 					}
 
-					//Passage de la gare au balcon
+					//Passage de la gare droite au balcon
 					if([
-						is_in.station.left,
+						is_in.station_right,
 						camera.position.z >= 670,
 						camera.position.z <= 700,
 						camera.position.x >= 3200,						
 						camera.position.x <= 3350,
 					].every(elem => elem)
 					) {
-						is_in.balcony = true;
-						is_in.station.left = false;
+						is_in.set("balcony");
 						camera.position.set(-170, 3000, 110);
 						//Pour voir les trains
 						controls.verticalMin = 3.0;
 					}
 
-					//Passage du balcon à la gare de gauche
+					//Passage de la gare gauche au balcon
+					if([
+						is_in.station_left,
+						camera.position.z >= -750,
+						camera.position.z <= -700,
+						camera.position.x >= 3150,						
+						camera.position.x <= 3250,
+					].every(elem => elem)
+					) {
+						is_in.set("balcony");
+						camera.position.set(-170, 3000, 110);
+						//Pour voir les trains
+						controls.verticalMin = 3.0;
+					}
+
+					//Passage du balcon à la gare de droite
 					if([
 						is_in.balcony,
 						camera.position.z <= 800,
 						camera.position.z >= 750
 					].every(elem => elem)
 					) {
-						is_in.station.right = true;
-						camera.position.set(-170, 3000, 110);
+						is_in.set("station_right");
+						camera.position.set(3100, 250, 700);
+						controls.verticalMin = 1.0;
+					}
+
+					//Passage du balcon à la gare de gauche
+					if([
+						is_in.balcony,
+						camera.position.z >= -800,
+						camera.position.z <= -750
+					].every(elem => elem)
+					) {
+						is_in.set("station_left");
+						camera.position.set(3100, 250, -700);
+
 						controls.verticalMin = 1.0;
 					}
 
@@ -404,11 +417,18 @@
 						camera.position.z = 2500;
 					}
 
-					//A l'intérieur de la gare
-					if(is_in.station.left && camera.position.z <= 550) {
+					//A l'intérieur de la gare droite
+					if(is_in.station_right && camera.position.z <= 550) {
 						camera.position.z = 550;
-					} else if(is_in.station.left && camera.position.z >= 700) {
+					} else if(is_in.station_right && camera.position.z >= 700) {
 						camera.position.z = 700;
+					}
+
+					//A l'intérieur de la gare gauche
+					if(is_in.station_left && camera.position.z <= -750) {
+						camera.position.z = -750;
+					} else if(is_in.station_left && camera.position.z >= -500) {
+						camera.position.z = -500;
 					}
 
 					//Sur le balcon
@@ -423,6 +443,15 @@
 							camera.position.x = -275;
 						}
 					}
+					
+
+
+
+					//reste à la distance du sol
+					if(is_in.outside && (camera.position.y < 180 || camera.position.y > 190)) camera.position.y = 190;
+					if(is_in.balcony && (camera.position.y < 3000 || camera.position.y > 3010)) camera.position.y = 3010;
+					if((is_in.station_left || is_in.station_right) && (camera.position.y < 220 || camera.position.y > 230)) camera.position.y = 230;
+					
 					
 				}
 			}
