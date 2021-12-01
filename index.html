@@ -202,7 +202,8 @@
 			}
 			//
 
-			let t = false;
+			let one_time_backspace = false;
+			let one_time_enter = false;
 			function animate() {
 
 				requestAnimationFrame( animate );
@@ -212,27 +213,23 @@
 
 
 				document.addEventListener('keydown', function(event) {
-					t = true;
-					
-					if(mod_view == 'fps') {
-						if(event.key === "Delete" && controls.activeLook == false) {
-							controls.activeLook = true;
-						} else if(event.key === "Delete" && controls.activeLook == true) {
-							controls.activeLook = false;
-
-						}
-					}
+					one_time_backspace = true;
+					one_time_enter = true;
 	
 				});
 
 				document.addEventListener('keyup', function(event) {
-					if(t && event.key == 'Enter') {
+					if(one_time_backspace && mod_view != 'orbital') {
+						controls.activeLook = event.key === "Backspace" && controls.activeLook ? false : true;
+						one_time_backspace = false;
+					}
+
+					if(one_time_enter && event.key == 'Enter') {
 						//Faire les choses que vous voulez faire à l'appuie d'entrer
 
-						camera.position.set(0, 200, 5300);
-						camera.rotation.y = -1.0;
-						console.log(camera); 
-						t = false;
+
+						console.log(camera.position); 
+						one_time_enter = false; //Ne pas toucher à ca
 					}
 				});
 
