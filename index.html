@@ -32,8 +32,14 @@
 
 			let mixer;
 
-			let mod_view = "orbital";
+			let mod_view;
 
+			let entry_zone = {
+				outsite: null,
+				station_right: null,
+				station_left: null,
+				balcony: null,
+			};
 
 			//variable collision
 			let is_in = {
@@ -92,10 +98,10 @@
 
 
 
-
 				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
 				hemiLight.position.set( 0, 200, 0 );
 				scene.add( hemiLight );
+
 
 				const dirLight = new THREE.DirectionalLight( 0xffffff );
 				dirLight.position.set( 0, 200, 100 );
@@ -170,6 +176,7 @@
 						
 				controls.target.set( 0, 0, 0 );
 				controls.update();
+				mod_view = 'orbital';
 
 
 
@@ -230,11 +237,14 @@
 
 			let one_time_backspace = false;
 			let one_time_enter = false;
+			let i = 0;
 			function animate() {
 
 				requestAnimationFrame( animate );
 
 				
+				
+
 
 
 				collisionFps();
@@ -254,9 +264,7 @@
 					if(one_time_enter && event.key == 'Enter') {
 						//Faire les choses que vous voulez faire à l'appuie d'entrer
 
-						console.log(is_in.station_left);
-						console.log(is_in["station['left']"]);
-						console.log(camera.position); 
+						console.log(camera.position);
 						one_time_enter = false; //Ne pas toucher à ca
 					}
 				});
@@ -300,7 +308,9 @@
 
 					case "fps":
 						camera.position.set(0, 200, 5300);
-						camera.rotation.set(0, 0, 0);
+						camera.rotateX(THREE.Math.degToRad(0));
+						camera.rotateY(THREE.Math.degToRad(0));
+						camera.rotateZ(THREE.Math.degToRad(0));
 
 						controls = new FirstPersonControls( camera, renderer.domElement );
 						
@@ -332,12 +342,7 @@
 			}
 
 			function collisionFps() {
-				if(mod_view == 'fps') {
-
-					if(is_in.station_left) console.log("left :"+is_in.station_left);
-					
-					if(is_in.station_right) console.log("right :"+is_in.station_right);
-					
+				if(mod_view == 'fps') {					
 
 					//Passage de l'exterieur à la gare droite
 					if([
