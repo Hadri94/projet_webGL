@@ -69,7 +69,7 @@
 				const container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 20000 );
+				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 20500 );
 				camera.position.set( 0, 200, 15000 );
 				camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -110,15 +110,40 @@
 				dirLight.shadow.camera.bottom = - 100;
 				dirLight.shadow.camera.left = - 120;
 				dirLight.shadow.camera.right = 120;
-				// scene.add( dirLight ); //ca fait mal au yeux
+				scene.add( dirLight ); //ca fait mal au yeux
 
 				// scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) ); 
 
 
-				const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
-				grid.material.opacity = 0.2;
-				grid.material.transparent = true;
-				scene.add( grid );
+				//Variable des textures 
+				let material_ground = {
+					map: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_COLOR.jpg"),
+					displacement: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_DISP.png"),
+					normal: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_NRM.jpg"), 
+					alpha: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_OCC.jpg"), 
+					bump: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_ROUGH.jpg")
+				};
+
+				//Options des textures
+				for(const property in material_ground) {
+					material_ground[property].repeat.set(16, 16);
+					material_ground[property].anisotropy = 6;
+					material_ground[property].wrapS = THREE.RepeatWrapping;
+					material_ground[property].wrapT = THREE.RepeatWrapping;
+				}
+
+				//Mesh du sol
+				let ground = new THREE.Mesh( 
+					new THREE.BoxGeometry( 12000, 5, 10000), 
+					new THREE.MeshPhongMaterial({ 
+						map: material_ground.map,
+						displacementMap: material_ground.displacement,
+						normalMap: material_ground.normal,
+						alphaMap: material_ground.alpha,
+						bumpMap: material_ground.bump
+					})
+				);
+				scene.add(ground);
 
 				// gare
 				const station_loader = new FBXLoader( manager );
