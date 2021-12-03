@@ -75,7 +75,7 @@
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
-				// scene.fog = new THREE.Fog( 0xa0a0a0, 200, 1000 ); //brouillard
+				// scene.fog = new THREE.Fog( 0xa0a0a0, 200, 5000 ); //brouillard
 
 
 				const manager = new THREE.LoadingManager();
@@ -97,23 +97,43 @@
 				};
 
 
+				/* Lumières */
 
 				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
 				hemiLight.position.set( 0, 200, 0 );
 				scene.add( hemiLight );
 
 
+				let spotLight = new THREE.SpotLight( 0xFFDD81 );
+				spotLight.position.set(9000, 12000, 10000);
+				spotLight.intensity = 20;
+				spotLight.angle = Math.PI / 8;
+				spotLight.penumbra = 0.2;
+				spotLight.decay = 4;
+				spotLight.distance = 30000;
+
+				spotLight.castShadow = true;
+				spotLight.shadow.mapSize.width = 512;
+				spotLight.shadow.mapSize.height = 512;
+				spotLight.shadow.camera.near = 10;
+				spotLight.shadow.camera.far = 200;
+
+				scene.add(spotLight);
+				
+
 				const dirLight = new THREE.DirectionalLight( 0xffffff );
-				dirLight.position.set( 0, 200, 100 );
+				dirLight.rotateZ(THREE.Math.degToRad(90));
+				dirLight.position.set( 1500, 500, 3500 );
 				dirLight.castShadow = true;
-				dirLight.shadow.camera.top = 180;
-				dirLight.shadow.camera.bottom = - 100;
-				dirLight.shadow.camera.left = - 120;
-				dirLight.shadow.camera.right = 120;
-				scene.add( dirLight ); //ca fait mal au yeux
+				// dirLight.shadow.camera.top = 180;
+				// dirLight.shadow.camera.bottom =10000;
+				// dirLight.shadow.camera.left = - 120;
+				// dirLight.shadow.camera.right = 120;
+				// scene.add( dirLight ); //ca fait mal au yeux
 
-				// scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) ); 
-
+				let lightHelper = new THREE.SpotLightHelper( spotLight );
+				scene.add( lightHelper );
+				
 
 				//Variable des textures 
 				let material_ground = {
