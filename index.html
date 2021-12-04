@@ -187,7 +187,7 @@
 
 				} );
 
-				// gare
+				// train
 				const train_loader = new FBXLoader( manager );
 				train_loader.load( './models/train2.fbx', function ( train ) {
 
@@ -208,6 +208,79 @@
 					train.position.set(0, 50, 250);
 					train.rotateY(THREE.Math.degToRad(90));
 					scene.add( train );
+
+				} );
+
+				// banc
+				const bench = [];
+				const bench_loader = new FBXLoader( manager );
+				bench_loader.load( './models/bench.fbx', function ( bench ) {
+
+					// mixer = new THREE.AnimationMixer( train );
+					
+					bench.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					bench.scale.set(1.5, 1.5, 1.5);
+					bench.position.set(2250, 60, -800);
+					scene.add( bench ); //1
+
+					let bench_clone = bench.clone();
+					bench_clone.position.set(2250, 60, 800);
+					bench_clone.rotateY(THREE.Math.degToRad(180));
+					scene.add( bench_clone ); //2
+
+					bench_clone = bench.clone();
+					bench_clone.position.set(-2250, 60, -800);
+					scene.add( bench_clone ); //3
+
+					bench_clone = bench.clone();
+					bench_clone.position.set(-2250, 60, 800);
+					bench_clone.rotateY(THREE.Math.degToRad(180));
+					scene.add( bench_clone ); //4
+
+
+				} );
+
+				// lampadaire
+				const streetlamp_loader = new FBXLoader( manager );
+				streetlamp_loader.load( './models/lamp.fbx', function ( streetLamp ) {
+
+					// mixer = new THREE.AnimationMixer( train );
+					
+					streetLamp.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					streetLamp.scale.set(1.35, 1.35, 1.35);
+					streetLamp.position.set(0, 75, 0);
+					streetLamp.rotateY(THREE.Math.degToRad(90));
+					scene.add( streetLamp );
+
+					let clone_streetlamp = streetLamp.clone();
+					clone_streetlamp.scale.set(1.35, 1.35, 1.35);
+					clone_streetlamp.position.set(2250, 75, 0);
+					scene.add( clone_streetlamp );
+
+					clone_streetlamp = streetLamp.clone();
+					clone_streetlamp.scale.set(1.35, 1.35, 1.35);
+					clone_streetlamp.position.set(-2250, 75, 0);
+					scene.add( clone_streetlamp );
 
 				} );
 
