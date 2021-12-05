@@ -119,29 +119,18 @@
 				spotLight.shadow.camera.far = 200;
 
 				scene.add(spotLight);
-				
 
-				const dirLight = new THREE.DirectionalLight( 0xffffff );
-				dirLight.rotateZ(THREE.Math.degToRad(90));
-				dirLight.position.set( 1500, 500, 3500 );
-				dirLight.castShadow = true;
-				// dirLight.shadow.camera.top = 180;
-				// dirLight.shadow.camera.bottom =10000;
-				// dirLight.shadow.camera.left = - 120;
-				// dirLight.shadow.camera.right = 120;
-				// scene.add( dirLight ); //ca fait mal au yeux
-
-				let lightHelper = new THREE.SpotLightHelper( spotLight );
-				scene.add( lightHelper );
+				// let lightHelper = new THREE.SpotLightHelper( spotLight );
+				// scene.add( lightHelper );
 				
 
 				//Variable des textures 
-				let material_ground = {
-					map: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_COLOR.jpg"),
-					displacement: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_DISP.png"),
-					normal: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_NRM.jpg"), 
-					alpha: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_OCC.jpg"), 
-					bump: new THREE.TextureLoader(manager).load("./texture/Asphalt_004_ROUGH.jpg")
+				const material_ground = {
+					map: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_COLOR.jpg"),
+					displacement: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_DISP.png"),
+					normal: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_NRM.jpg"), 
+					alpha: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_OCC.jpg"), 
+					bump: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_ROUGH.jpg")
 				};
 
 				//Options des textures
@@ -168,7 +157,7 @@
 
 				// gare
 				const station_loader = new FBXLoader( manager );
-				station_loader.load( './models/garefbx.fbx', function ( station ) {
+				station_loader.load( './models/station/station.fbx', function ( station ) {
 
 					// mixer = new THREE.AnimationMixer( station );
 					
@@ -189,7 +178,7 @@
 
 				// train
 				const train_loader = new FBXLoader( manager );
-				train_loader.load( './models/train2.fbx', function ( train ) {
+				train_loader.load( './models/train/train.fbx', function ( train ) {
 
 					// mixer = new THREE.AnimationMixer( train );
 					
@@ -214,7 +203,7 @@
 				// banc
 				const bench = [];
 				const bench_loader = new FBXLoader( manager );
-				bench_loader.load( './models/bench.fbx', function ( bench ) {
+				bench_loader.load( './models/bench/bench.fbx', function ( bench ) {
 
 					// mixer = new THREE.AnimationMixer( train );
 					
@@ -228,31 +217,26 @@
 						}
 
 					} );
+					
+					let cloneb;
+					const coor = {
+						x: 2250,
+						z: 800
+					};
 
 					bench.scale.set(1.5, 1.5, 1.5);
-					bench.position.set(2250, 60, -800);
-					scene.add( bench ); //1
+					bench.position.set(coor.x, 60, -coor.z);
+					scene.add( bench );
 
-					let bench_clone = bench.clone();
-					bench_clone.position.set(2250, 60, 800);
-					bench_clone.rotateY(THREE.Math.degToRad(180));
-					scene.add( bench_clone ); //2
-
-					bench_clone = bench.clone();
-					bench_clone.position.set(-2250, 60, -800);
-					scene.add( bench_clone ); //3
-
-					bench_clone = bench.clone();
-					bench_clone.position.set(-2250, 60, 800);
-					bench_clone.rotateY(THREE.Math.degToRad(180));
-					scene.add( bench_clone ); //4
-
+					cloneMesh(bench, [-2250, 60, -800]);
+					cloneMesh(bench, [2250, 60, 800], ['Y', 180]);
+					cloneMesh(bench, [-2250, 60, 800], ['Y', 180]);
 
 				} );
 
 				// lampadaire
 				const streetlamp_loader = new FBXLoader( manager );
-				streetlamp_loader.load( './models/lamp.fbx', function ( streetLamp ) {
+				streetlamp_loader.load( './models/streetlamp/streetlamp.fbx', function ( streetLamp ) {
 
 					// mixer = new THREE.AnimationMixer( train );
 					
@@ -267,20 +251,15 @@
 
 					} );
 
-					streetLamp.scale.set(1.35, 1.35, 1.35);
+					
+
+					streetLamp.scale.set(1.33, 1.33, 1.33);
 					streetLamp.position.set(0, 75, 0);
 					streetLamp.rotateY(THREE.Math.degToRad(90));
 					scene.add( streetLamp );
 
-					let clone_streetlamp = streetLamp.clone();
-					clone_streetlamp.scale.set(1.35, 1.35, 1.35);
-					clone_streetlamp.position.set(2250, 75, 0);
-					scene.add( clone_streetlamp );
-
-					clone_streetlamp = streetLamp.clone();
-					clone_streetlamp.scale.set(1.35, 1.35, 1.35);
-					clone_streetlamp.position.set(-2250, 75, 0);
-					scene.add( clone_streetlamp );
+					cloneMesh(streetLamp, [2250, 75, 0]);
+					cloneMesh(streetLamp, [-2250, 75, 0]);
 
 				} );
 
@@ -580,6 +559,13 @@
 				}
 			}
 
+
+			function cloneMesh(object, coord, rotate) {
+				let clone = object.clone();
+				clone.position.set(coord[0], coord[1], coord[2]);
+				if(rotate != null) clone['rotate'+ rotate[0]](THREE.Math.degToRad(rotate[1]))
+				scene.add( clone );
+			}
 
 
 			init();
