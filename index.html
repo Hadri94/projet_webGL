@@ -7,6 +7,9 @@
 		<link type="text/css" rel="stylesheet" href="main.css">
 	</head>
 	<body>
+		<audio id="annonce1" loop preload="auto" style="display: none">
+			<source src="sounds/annonce-train.mp3" type="audio/mp3">
+		</audio>
 
 		<div id="ddsfq">
 			<button id="jsqd">Play</button>
@@ -31,6 +34,10 @@
 			const clock = new THREE.Clock();
 
 			let mixer;
+
+			const listener = new THREE.AudioListener();
+			const advert = new THREE.PositionalAudio( listener );
+			
 
 			let mod_view;
 
@@ -72,6 +79,7 @@
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 20500 );
 				camera.position.set( 0, 200, 15000 );
 				camera.lookAt(new THREE.Vector3(0, 0, 0));
+				camera.add( listener );
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
@@ -79,18 +87,18 @@
 
 
 				const manager = new THREE.LoadingManager();
-				manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
-					console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-				};
+				// manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+				// 	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+				// };
 
 				manager.onLoad = function ( ) {
 					console.log( 'Loading complete!');
 				};
 
 
-				manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-					console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-				};
+				// manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+				// 	console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+				// };
 
 				manager.onError = function ( url ) {
 					console.log( 'There was an error loading ' + url );
@@ -201,7 +209,6 @@
 				} );
 
 				// banc
-				const bench = [];
 				const bench_loader = new FBXLoader( manager );
 				bench_loader.load( './models/bench/bench.fbx', function ( bench ) {
 
@@ -216,16 +223,10 @@
 
 						}
 
-					} );
-					
-					let cloneb;
-					const coor = {
-						x: 2250,
-						z: 800
-					};
+					} );			
 
 					bench.scale.set(1.5, 1.5, 1.5);
-					bench.position.set(coor.x, 60, -coor.z);
+					bench.position.set(2250, 60, -800);
 					scene.add( bench );
 
 					cloneMesh(bench, [-2250, 60, -800]);
@@ -251,9 +252,7 @@
 
 					} );
 
-					
-
-					streetLamp.scale.set(1.33, 1.33, 1.33);
+					streetLamp.scale.set(1.4, 1.4, 1.4);
 					streetLamp.position.set(0, 75, 0);
 					streetLamp.rotateY(THREE.Math.degToRad(90));
 					scene.add( streetLamp );
@@ -262,6 +261,19 @@
 					cloneMesh(streetLamp, [-2250, 75, 0]);
 
 				} );
+
+				const audioLoader = new THREE.AudioLoader();
+				audioLoader.load( 'sounds/annonce-train.mp3', function( buffer ) {
+					advert.position.set(0,0,0);
+					advert.setRefDistance( 20 );
+					advert.setBuffer( buffer );
+					advert.setLoop( true );
+					advert.setVolume( 0.5 );
+					advert.play();
+				});
+
+				// creer une fonction pour creer les sons sur les lampes
+
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -565,6 +577,7 @@
 				clone.position.set(coord[0], coord[1], coord[2]);
 				if(rotate != null) clone['rotate'+ rotate[0]](THREE.Math.degToRad(rotate[1]))
 				scene.add( clone );
+				return clone;
 			}
 
 
