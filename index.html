@@ -10,6 +10,9 @@
 		<audio id="annonce1" loop preload="auto" style="display: none">
 			<source src="sounds/annonce-train.mp3" type="audio/mp3">
 		</audio>
+		<audio id="annonce2" loop preload="auto" style="display: none">
+			<source src="sounds/annonce-train.mp3" type="audio/mp3">
+		</audio>
 
 		<div id="ddsfq">
 			<button id="jsqd">Play</button>
@@ -33,11 +36,9 @@
 			let gui;
 			const clock = new THREE.Clock();
 
-			let mixer;
+			let songElement = [];
 
-			const listener = new THREE.AudioListener();
-			const advert = new THREE.PositionalAudio( listener );
-			
+			let mixer;
 
 			let mod_view;
 
@@ -79,7 +80,11 @@
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 20500 );
 				camera.position.set( 0, 200, 15000 );
 				camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+				const listener = new THREE.AudioListener();
 				camera.add( listener );
+				const listener2 = new THREE.AudioListener();
+				camera.add( listener2 );
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
@@ -236,43 +241,44 @@
 				} );
 
 				// lampadaire
-				const streetlamp_loader = new FBXLoader( manager );
-				streetlamp_loader.load( './models/streetlamp/streetlamp.fbx', function ( streetLamp ) {
+				for (let i = 0; i < 2; i++) {
 
-					// mixer = new THREE.AnimationMixer( train );
+					const streetlamp_loader = new FBXLoader( manager );
+					streetlamp_loader.load( './models/streetlamp/streetlamp.fbx', function ( streetLamp ) {
+
 					
-					streetLamp.traverse( function ( child ) {
+						// mixer = new THREE.AnimationMixer( train );
+						
+						streetLamp.traverse( function ( child ) {
 
-						if ( child.isMesh ) {
+							if ( child.isMesh ) {
 
-							child.castShadow = true;
-							child.receiveShadow = true;
+								child.castShadow = true;
+								child.receiveShadow = true;
 
-						}
+							}
+
+						} );
+
+						streetLamp.scale.set(1.4, 1.4, 1.4);
+						if(i == 1 ) streetLamp.position.set(-2250, 75, 0);
+						else streetLamp.position.set(2250, 75, 0);
+						streetLamp.rotateY(THREE.Math.degToRad(90));
+						scene.add( streetLamp );
+
+						const sound1 = new THREE.PositionalAudio( listener );
+						songElement[i] = i == 1 ? document.getElementById( 'annonce1' ) : document.getElementById( 'annonce2' );
+
+						
+						sound1.setMediaElementSource( songElement[i] );
+						sound1.setRefDistance( 5 );
+						songElement[i].play();
+						streetLamp.add( sound1 );
+
 
 					} );
-
-					streetLamp.scale.set(1.4, 1.4, 1.4);
-					streetLamp.position.set(0, 75, 0);
-					streetLamp.rotateY(THREE.Math.degToRad(90));
-					scene.add( streetLamp );
-
-					cloneMesh(streetLamp, [2250, 75, 0]);
-					cloneMesh(streetLamp, [-2250, 75, 0]);
-
-				} );
-
-				const audioLoader = new THREE.AudioLoader();
-				audioLoader.load( 'sounds/annonce-train.mp3', function( buffer ) {
-					advert.position.set(0,0,0);
-					advert.setRefDistance( 20 );
-					advert.setBuffer( buffer );
-					advert.setLoop( true );
-					advert.setVolume( 0.5 );
-					advert.play();
-				});
-
-				// creer une fonction pour creer les sons sur les lampes
+				}
+				
 
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -578,6 +584,10 @@
 				if(rotate != null) clone['rotate'+ rotate[0]](THREE.Math.degToRad(rotate[1]))
 				scene.add( clone );
 				return clone;
+			}
+
+			function loadMultipleSound() {
+				
 			}
 
 

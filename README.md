@@ -67,3 +67,8 @@ Le loading permet d'afficher le chargement des fichiers dans la console.
 ```js
 const station_loader = new FBXLoader( manager );
 ```
+
+
+### note extra
+- la variable `songElement` est un tableau qui a le son des deux haut-parleurs. ```songElement[0].play()```
+
