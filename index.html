@@ -682,10 +682,6 @@
 				return clone;
 			}
 
-			function loadMultipleSound() {
-				
-			}
-
 			function animationTrain(mode) {
 				switch(mode) {
 					case 1:
@@ -695,10 +691,10 @@
 							songElement[3].play();
 						} else if(train.position.x < -2000) {
 							train.position.x += 30;
-						} else if(train.position.x < -1000) {
+						} else if(train.position.x < -800) {
 							train.position.x += 15;
 						} else if(train.position.x < 0) {
-							train.position.x += 5;
+							train.position.x += 7;
 						} else {
 							animTrain = 0;
 						}
