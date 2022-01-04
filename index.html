@@ -23,13 +23,34 @@
 			<source src="sounds/sans_arret.wav" type="audio/wav">
 		</audio>
 
-		<div id="ddsfq">
-			<button id="jsqd">Play</button>
-		</div>
-
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - spotlight by <a href="http://master-domain.com" target="_blank" rel="noopener">Master James</a><br />
-		</div>
+        <div id="overlay">
+            <div style="font-size: 50px; margin-bottom: 2%;">Gare futuriste</div>
+            <div id="loading">
+                <div class="blocks" style="--i:1;  "></div>
+                <div class="blocks" style="--i:2;  "></div>
+                <div class="blocks" style="--i:3;  "></div>
+                <div class="blocks" style="--i:4;  "></div>
+                <div class="blocks" style="--i:5;  "></div>
+                <div class="blocks" style="--i:6;  "></div>
+                <div class="blocks" style="--i:7;  "></div>
+                <div class="blocks" style="--i:8;  "></div>
+                <div class="blocks" style="--i:9;  "></div>
+                <div class="blocks" style="--i:10; "></div>
+                <div class="blocks" style="--i:11;  "></div>
+                <div class="blocks" style="--i:12;  "></div>
+                <div class="blocks" style="--i:13;  "></div>
+                <div class="blocks" style="--i:14;  "></div>
+                <div class="blocks" style="--i:15;  "></div>
+                <div class="blocks" style="--i:16;  "></div>
+                <div class="blocks" style="--i:17;  "></div>
+                <div class="blocks" style="--i:18;  "></div>
+                <div class="blocks" style="--i:19;  "></div>
+                <div class="blocks" style="--i:20; "></div>
+            </div>
+            <div id="button_play">
+                <button id="button_conf" disabled>Chargement..</button>
+            </div>
+        </div>
 
 		<script type="module">
 
@@ -41,9 +62,12 @@
 			import { FBXLoader } from './jsm/FBXLoader.js';
 			import { GLTFLoader } from './jsm/GLTFLoader.js';
 
+			const ITEMS_MAX = 57;
+
             let camera, scene, controls, renderer, stats;
 			let gui;
 			const clock = new THREE.Clock();
+            let fileLoaded = 0;
 
 			let songElement = [];
 
@@ -83,6 +107,11 @@
 				},
 			};
 
+            document.getElementById('button_conf').addEventListener('mouseup', function () {
+                const overlay = document.getElementById( 'overlay' );
+                overlay.remove();
+            });
+
 			function init() {
 
 				const container = document.createElement( 'div' );
@@ -103,25 +132,7 @@
 				scene.background = new THREE.Color( 0xa0a0a0 );
 				// scene.fog = new THREE.Fog( 0xa0a0a0, 200, 5000 ); //brouillard
 
-
-				const manager = new THREE.LoadingManager();
-				// manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
-				// 	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-				// };
-
-				manager.onLoad = function ( ) {
-					console.log( 'Loading complete!');
-				};
-
-
-				// manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-				// 	console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-				// };
-
-				manager.onError = function ( url ) {
-					console.log( 'There was an error loading ' + url );
-				};
-
+                const manager = new THREE.LoadingManager();
 
 				/* Lumières */
 
@@ -315,7 +326,33 @@
 
 					} );
 				}
-				
+
+				manager.onLoad = function ( ) {
+					console.log( 'Loading complete!');
+
+                    const buttonLoading = document.getElementById('button_conf');
+                    buttonLoading.innerHTML = 'jouer';
+                    buttonLoading.disabled = false;
+				};
+
+
+				manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+					console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+                    let css = document.getElementsByClassName('blocks');
+                    const percent = Math.round(fileLoaded * 100 / ITEMS_MAX);
+                    const index = Math.round( percent * 19 / 100);
+                    css[index].style.background = 'white';
+                    css[index].style.boxShadow = 'none';
+                    fileLoaded++;
+
+                    const buttonLoading = document.getElementById('button_conf');
+                    buttonLoading.innerHTML = percent +'%';
+				};
+
+				manager.onError = function ( url ) {
+					console.log( 'There was an error loading ' + url );
+				};
 
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -421,8 +458,6 @@
 
 				animationTrain(animTrain);
 				
-
-
 
 				collisionFps();
 
