@@ -53,6 +53,8 @@
 			import { FBXLoader } from './jsm/FBXLoader.js';
 			import { GLTFLoader } from './jsm/GLTFLoader.js';
 
+			const ITEMS_MAX = 57;
+
             let camera, scene, controls, renderer, stats;
 			let gui;
 			const clock = new THREE.Clock();
@@ -298,10 +300,10 @@
 
 
 				manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-					// console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+					console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
 
                     let css = document.getElementsByClassName('blocks');
-                    const percent = Math.round(fileLoaded * 100 / itemsTotal);
+                    const percent = Math.round(fileLoaded * 100 / ITEMS_MAX);
                     const index = Math.round( percent * 19 / 100);
                     css[index].style.background = 'white';
                     css[index].style.boxShadow = 'none';
