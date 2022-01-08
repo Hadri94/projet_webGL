@@ -62,8 +62,9 @@
             import Stats from './jsm/libs/stats.module.js';
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js';
 			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+			import { RGBELoader } from './jsm/loaders/RGBELoader.js';
 
-			const ITEMS_MAX = 57;
+			const ITEMS_MAX = 50;
 
             let camera, scene, controls, renderer, stats;
 			let gui;
@@ -72,9 +73,13 @@
 
 			let songElement = [];
 
-			let mixer;
+			let mixer, mixer_rasta;
+			let action_rasta;
 
 			let train, animTrain = 0;
+			const group_train = new THREE.Group();;
+
+			let ambient;
 
 			let mod_view;
 
@@ -84,6 +89,10 @@
 				station_left: null,
 				balcony: null,
 			};
+
+			let headlights = [];
+			
+			let light = [];
 
 			//variable collision
 			let is_in = {
@@ -130,223 +139,223 @@
 				camera.add( listener3 );
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xa0a0a0 );
+
+				
+
+				//scene.background = new THREE.Color( 0xa0a0a0 );
 				// scene.fog = new THREE.Fog( 0xa0a0a0, 200, 5000 ); //brouillard
 
                 const manager = new THREE.LoadingManager();
 
-				/* Lumières */
-				
-				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
-				hemiLight.position.set( 0, 200, 0 );
-				scene.add( hemiLight );
-			
-				let spotLight = new THREE.SpotLight( 0xFFDD81 );
-				spotLight.position.set(9000, 12000, 10000);
-				spotLight.intensity = 20;
-				spotLight.angle = Math.PI / 8;
-				spotLight.penumbra = 0.2;
-				spotLight.decay = 4;
-				spotLight.distance = 30000;
 
-				spotLight.castShadow = true;
-				spotLight.shadow.mapSize.width = 512;
-				spotLight.shadow.mapSize.height = 512;
-				spotLight.shadow.camera.near = 10;
-				spotLight.shadow.camera.far = 200;
-
-				scene.add(spotLight);
-				
-		
-
-				let spotLight1 = new THREE.SpotLight(0xFFFFFF);
-				spotLight1.intensity = 3;
-				spotLight1.position.set(-2252,770,700);
-				spotLight1.penumbra = 0.1;
-				spotLight1.decay = 1;
-				spotLight1.angle =  0.4;
-				spotLight1.distance = 5000;
-				spotLight1.target.position.set(-2223,92,57);
-
-				
-				spotLight1.castShadow = true;
-				spotLight1.shadow.mapSize.width = 512;
-				spotLight1.shadow.mapSize.height = 512;
-				spotLight1.shadow.camera.near = 10;
-				spotLight1.shadow.camera.far = 200;
-
-				scene.add(spotLight1);
-				scene.add(spotLight1.target);
-
-				//let lightHelper1 = new THREE.SpotLightHelper( spotLight1 );
-				//scene.add( lightHelper1 );
-				
-				//let shadowCameraHelper1 = new THREE.CameraHelper( spotLight1.shadow.camera );
-				//scene.add( shadowCameraHelper1 );
-
-				let spotLight2 = new THREE.SpotLight(0xFFFFFF);
-				spotLight2.intensity = 3;
-				spotLight2.position.set(-2252,770,-700);
-				spotLight2.penumbra = 0.1;
-				spotLight2.decay = 1;
-				spotLight2.angle =  0.4;
-				spotLight2.distance = 5000;
-				spotLight2.target.position.set(-2223,92,57);
-
-				
-				spotLight2.castShadow = true;
-				spotLight2.shadow.mapSize.width = 512;
-				spotLight2.shadow.mapSize.height = 512;
-				spotLight2.shadow.camera.near = 10;
-				spotLight2.shadow.camera.far = 200;
-
-				scene.add(spotLight2);
-				scene.add(spotLight2.target);
-
-
-				//Variable des textures 
-				const material_ground = {
-					map: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_COLOR.jpg"),
-					displacement: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_DISP.png"),
-					normal: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_NRM.jpg"), 
-					alpha: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_OCC.jpg"), 
-					bump: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_ROUGH.jpg")
-				};
-
-				//Options des textures
-				for(const property in material_ground) {
-					material_ground[property].repeat.set(16, 16);
-					material_ground[property].anisotropy = 6;
-					material_ground[property].wrapS = THREE.RepeatWrapping;
-					material_ground[property].wrapT = THREE.RepeatWrapping;
-				}
-
-				//Mesh du sol
-				let ground = new THREE.Mesh( 
-					new THREE.BoxGeometry( 12000, 5, 10000), 
-					new THREE.MeshPhongMaterial({ 
-						map: material_ground.map,
-						displacementMap: material_ground.displacement,
-						normalMap: material_ground.normal,
-						alphaMap: material_ground.alpha,
-						bumpMap: material_ground.bump
-					})
-				);
-				ground.receiveShadow = true;
-				scene.add(ground);
-
-				// gare
-				const station_loader = new GLTFLoader(manager).setPath('models/station/');
-				station_loader.load( 'station.glb', function ( gltf ) {
+					/* Lumières */
 					
-					let station = gltf.scene
-					station.traverse( function ( child ) {
+					ambient = new THREE.AmbientLight(0xffffff, 1);
+					scene.add(ambient);
 
-						if ( child.isMesh ) {
-
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-
-						}
-
-					} );
-					station.scale.set(100,100,100);
-					scene.add( station );
-
-					render();
-
-				} );
-			
 				
-				// train
-				const train_loader = new GLTFLoader( manager ).setPath('models/train/');
-				train_loader.load( 'train.glb', function ( obj ) {
+					let spotLight = new THREE.SpotLight( 0xFFDD81 );
+					spotLight.position.set(9000, 6000, -10000);
+					spotLight.intensity = 8;
+					spotLight.angle = 1;
+					spotLight.penumbra = 0.2;
+					spotLight.decay = 4;
+					spotLight.distance = 30000;
 
-					obj = obj.scene;
-					train = obj;
-					// mixer = new THREE.AnimationMixer( train );
+					spotLight.castShadow = true;
+					spotLight.shadow.mapSize.width = 1024;
+					spotLight.shadow.mapSize.height = 1024;
+					spotLight.shadow.camera.near = 10;
+					spotLight.shadow.camera.far = 200;
+
+					scene.add(spotLight);
 					
-					obj.traverse( function ( child ) {
+					// Lumières intérieures
+					for (let i = 0; i < 4; i++){
+						light[i] = new THREE.SpotLight(0xFFFFFF);
+						light[i].intensity = 3;
+						light[i].penumbra = 0.2;
+						light[i].focus = 0.2
+						light[i].decay = 1;
+						light[i].angle =  0.4;
+						light[i].distance = 5000;
+					}
 
-						if ( child.isMesh ) {
+					light[0].position.set(-2250,770,700);
+					light[1].position.set(-2250,770,-700);
 
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-
-					} );
-
-					obj.scale.set(130, 130, 130);
-					obj.position.set(0, 50, 200);
-					obj.rotateY(THREE.Math.degToRad(90));
-					scene.add( obj );
-
-					const sound2 = new THREE.PositionalAudio( listener2 );
-					songElement[2] = document.getElementById( 'demarrage_train' );
-					sound2.setMediaElementSource( songElement[2] );
-					sound2.setRefDistance( 100 );
-					sound2.setVolume(5);
-					obj.add( sound2 );
-
-					const sound3 = new THREE.PositionalAudio( listener2 );
-					songElement[3] = document.getElementById( 'arriver_train' );
-					sound3.setMediaElementSource( songElement[3] );
-					sound3.setRefDistance( 100 );
-					sound3.setVolume(5);
-					obj.add( sound3 );
-
-					const sound4 = new THREE.PositionalAudio( listener2 );
-					songElement[4] = document.getElementById( 'sans_arret_train' );
-					sound4.setMediaElementSource( songElement[4] );
-					sound4.setRefDistance( 100 );
-					sound4.setVolume(5);
-					obj.add( sound4 );
-
-				} );
-
-
-
-			
-
-				// banc
-				const bench_loader = new FBXLoader( manager );
-				bench_loader.load( './models/bench/bench.fbx', function ( bench ) {
-
-					// mixer = new THREE.AnimationMixer( train );
+					for(let i = 0; i < 2; i++){
+						light[i].target.position.set(-2250,92,57);
+					}
+				
+					light[2].position.set(2250,770,550)
+					light[3].position.set(2250,770,-550)
 					
-					bench.traverse( function ( child ) {
+					for(let i = 2; i < 4; i++){
+						light[i].target.position.set(2250,92,11);
+					}
 
-						if ( child.isMesh ) {
+					for (let i = 0; i < 4; i++){
+						light[i].castShadow = true;
+						light[i].shadow.mapSize.width = 1024;
+						light[i].shadow.mapSize.height = 1024;
+						light[i].shadow.camera.near = 10;
+						light[i].shadow.camera.far = 200;
+					}
 
-							child.castShadow = true;
-							child.receiveShadow = true;
+					for (let i = 0; i < 4; i++){
+						scene.add(light[i]);
+						scene.add(light[i].target);
+					}
 
-						}
+					//Phares
 
-					} );			
+					for (let i = 0; i < 4; i++){
 
-					bench.scale.set(1.5, 1.5, 1.5);
-					bench.position.set(2250, 60, -800);
-					scene.add( bench );
+						headlights[i] = new THREE.SpotLight(0xFF0000);
+						headlights[i].intensity = 8;
+						headlights[i].angle = 1;
+						headlights[i].penumbra = 0.2;
+						headlights[i].decay = 4;
+						headlights[i].distance = 3000;
+					}
 
-					cloneMesh(bench, [-2250, 60, -800]);
-					cloneMesh(bench, [2250, 60, 800], ['Y', 180]);
-					cloneMesh(bench, [-2250, 60, 800], ['Y', 180]);
+					headlights[0].position.set(6045, 167, 271);
+					headlights[1].position.set(6045, 167, 124);
+					
 
-				} );
+					for(let i = 0; i < 2; i++){
 
-				// lampadaire
-				for (let i = 0; i < 2; i++) {
+						headlights[i].target.position.set(10000,167,271);
 
-					const streetlamp_loader = new GLTFLoader( manager ).setPath('models/streetlamp/');
-					streetlamp_loader.load( 'lamp.glb', function ( streetLamp ) {
+					}
 
-						streetLamp = streetLamp.scene;
-						// mixer = new THREE.AnimationMixer( train );
+					headlights[2].position.set(-6045, 167, 271);
+					headlights[3].position.set(-6045, 167, 124);
+
+					for(let i = 2; i < 4; i++){
+
+						headlights[i].target.position.set(-10000,167,271);
+
+					}
+
+					for (let i = 0; i < 4; i++){
+
+						headlights[i].castShadow = true;
+						headlights[i].shadow.mapSize.width = 1024;
+						headlights[i].shadow.mapSize.height = 1024;
+						headlights[i].shadow.camera.near = 10;
+						headlights[i].shadow.camera.far = 200;
+
+					}
+
+					//scene.add(headlight);
+					//scene.add(headlight.target);
+					
+					for (let i = 0; i < 4; i++){
+
+						group_train.add(headlights[i]);
+						group_train.add(headlights[i].target);
+
+					}
+
+					
+					//let lightHelper1 = new THREE.SpotLightHelper( headlight );
+					//scene.add( lightHelper1 );
+					
+					//let shadowCameraHelper1 = new THREE.CameraHelper( headlight.shadow.camera );
+					//scene.add( shadowCameraHelper1 );
+					
+
+
+
+					//Variable des textures 
+					const material_ground = {
+						map: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_COLOR.jpg"),
+						displacement: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_DISP.png"),
+						normal: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_NRM.jpg"), 
+						alpha: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_OCC.jpg"), 
+						bump: new THREE.TextureLoader(manager).load("./textures/ground/Asphalt_004_ROUGH.jpg")
+					};
+
+					//Options des textures
+					for(const property in material_ground) {
+						material_ground[property].repeat.set(16, 16);
+						material_ground[property].anisotropy = 6;
+						material_ground[property].wrapS = THREE.RepeatWrapping;
+						material_ground[property].wrapT = THREE.RepeatWrapping;
+					}
+
+					//Mesh du sol
+					let ground = new THREE.Mesh( 
+						new THREE.BoxGeometry( 12000, 5, 10000), 
+						new THREE.MeshPhongMaterial({ 
+							map: material_ground.map,
+							displacementMap: material_ground.displacement,
+							normalMap: material_ground.normal,
+							alphaMap: material_ground.alpha,
+							bumpMap: material_ground.bump
+						})
+					);
+					ground.receiveShadow = true;
+					scene.add(ground);
+
+					// gare
+					const station_loader = new GLTFLoader(manager).setPath('models/station/');
+					station_loader.load( 'station.glb', function ( gltf ) {
 						
-						streetLamp.traverse( function ( child ) {
+						let station = gltf.scene
+						station.traverse( function ( child ) {
+
+							if ( child.isMesh ) {
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+
+							}
+
+						} );
+						station.scale.set(100,100,100);
+						scene.add( station );
+
+						render();
+
+					} );
+
+					//rasta
+
+					const rasta_loader = new FBXLoader(manager).setPath('models/rasta/');
+					rasta_loader.load('rasta.fbx', function (rasta){
+
+						mixer_rasta = new THREE.AnimationMixer(rasta);
+						action_rasta = mixer_rasta.clipAction(rasta.animations[0]);
+
+						rasta.traverse(function(child){
+
+							if (child.isMesh){
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+							}
+
+						});
+
+						
+						rasta.position.set(2550,100,-700);
+						scene.add(rasta);
+						action_rasta.play();
+
+					});
+
+					//rail
+					const rail_loader = new GLTFLoader( manager ).setPath('models/rail/');
+					rail_loader.load( 'rail.glb', function ( gltf ) {
+
+						let rail = gltf.scene;
+
+						rail.traverse( function ( child ) {
 
 							if ( child.isMesh ) {
 
@@ -357,74 +366,193 @@
 
 						} );
 
-						streetLamp.scale.set(140, 140, 140);
-						if(i == 1 ) streetLamp.position.set(-2250, 75, 0);
-						else streetLamp.position.set(2250, 75, 0);
-						streetLamp.rotateY(THREE.Math.degToRad(90));
-						scene.add( streetLamp );
-
-						const sound1 = new THREE.PositionalAudio( listener );
-						songElement[i] = i == 1 ? document.getElementById( 'annonce1' ) : document.getElementById( 'annonce2' );
-						
-						sound1.setMediaElementSource( songElement[i] );
-						sound1.setRefDistance( 10 );
-						sound1.setVolume(2);
-						streetLamp.add( sound1 );
-
+						rail.scale.set(100,100,100);
+						rail.position.set(11000,0,0);
+						cloneMesh(rail, [22000, 0, 0]);
+						cloneMesh(rail, [-11000, 0, 0]);
+						cloneMesh(rail, [-22000, 0, 0]);
+						scene.add(rail);
 
 					} );
-				}
+					
+					// train
+					const train_loader = new GLTFLoader( manager ).setPath('models/train/');
+					train_loader.load( 'train.glb', function ( obj ) {
 
-				manager.onLoad = function ( ) {
-					console.log( 'Loading complete!');
-
-                    const buttonLoading = document.getElementById('button_conf');
-                    buttonLoading.innerHTML = 'jouer';
-                    buttonLoading.disabled = false;
-				};
-
-
-				manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-					console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-
-                    let css = document.getElementsByClassName('blocks');
-                    const percent = Math.round(fileLoaded * 100 / ITEMS_MAX);
-                    const index = Math.round( percent * 19 / 100);
-                    css[index].style.background = 'white';
-                    css[index].style.boxShadow = 'none';
-                    fileLoaded++;
-
-                    const buttonLoading = document.getElementById('button_conf');
-                    buttonLoading.innerHTML = percent +'%';
-				};
-
-				manager.onError = function ( url ) {
-					console.log( 'There was an error loading ' + url );
-				};
-
-
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.shadowMap.enabled = true;
-				container.appendChild( renderer.domElement );
-
-
-				controls = new OrbitControls( camera, renderer.domElement );
+						obj = obj.scene;
+						train = obj;
+						// mixer = new THREE.AnimationMixer( train );
 						
-				controls.target.set( 0, 0, 0 );
-				controls.update();
-				mod_view = 'orbital';
+						obj.traverse( function ( child ) {
+
+							if ( child.isMesh ) {
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+							}
+
+						} );
+
+						obj.scale.set(130, 130, 130);
+						obj.position.set(0, 50, 200);
+						obj.rotateY(THREE.Math.degToRad(90));
+						//scene.add( obj );
+						group_train.add(obj);
+
+						const sound2 = new THREE.PositionalAudio( listener2 );
+						songElement[2] = document.getElementById( 'demarrage_train' );
+						sound2.setMediaElementSource( songElement[2] );
+						sound2.setRefDistance( 100 );
+						sound2.setVolume(5);
+						obj.add( sound2 );
+
+						const sound3 = new THREE.PositionalAudio( listener2 );
+						songElement[3] = document.getElementById( 'arriver_train' );
+						sound3.setMediaElementSource( songElement[3] );
+						sound3.setRefDistance( 100 );
+						sound3.setVolume(5);
+						obj.add( sound3 );
+
+						const sound4 = new THREE.PositionalAudio( listener2 );
+						songElement[4] = document.getElementById( 'sans_arret_train' );
+						sound4.setMediaElementSource( songElement[4] );
+						sound4.setRefDistance( 100 );
+						sound4.setVolume(5);
+						obj.add( sound4 );
+
+					} );
 
 
 
-				window.addEventListener( 'resize', onWindowResize );
+				
 
-				// stats
-				stats = new Stats();
-				container.appendChild( stats.dom );
+					// banc
+					const bench_loader = new GLTFLoader( manager ).setPath('models/bench/');
+					bench_loader.load( 'bench.glb', function ( gltf ) {
+
+						let bench = gltf.scene
+
+						// mixer = new THREE.AnimationMixer( train );
+						
+						bench.traverse( function ( child ) {
+
+							if ( child.isMesh ) {
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+							}
+
+						} );			
+
+						bench.scale.set(150, 150, 150);
+						bench.position.set(2250, 55, -800);
+						scene.add( bench );
+
+						cloneMesh(bench, [-2250, 55, -800]);
+						cloneMesh(bench, [2250, 55, 800], ['Y', 180]);
+						cloneMesh(bench, [-2250, 55, 800], ['Y', 180]);
+
+					} );
+
+					// lampadaire
+					for (let i = 0; i < 2; i++) {
+
+						const streetlamp_loader = new GLTFLoader( manager ).setPath('models/streetlamp/');
+						streetlamp_loader.load( 'lamp.glb', function ( streetLamp ) {
+
+							streetLamp = streetLamp.scene;
+							// mixer = new THREE.AnimationMixer( train );
+							
+							streetLamp.traverse( function ( child ) {
+
+								if ( child.isMesh ) {
+
+									child.castShadow = true;
+									child.receiveShadow = true;
+
+								}
+
+							} );
+
+							streetLamp.scale.set(140, 140, 140);
+							if(i == 1 ) streetLamp.position.set(-2250, 75, 0);
+							else streetLamp.position.set(2250, 75, 0);
+							streetLamp.rotateY(THREE.Math.degToRad(90));
+							scene.add( streetLamp );
+
+							const sound1 = new THREE.PositionalAudio( listener );
+							songElement[i] = i == 1 ? document.getElementById( 'annonce1' ) : document.getElementById( 'annonce2' );
+							
+							sound1.setMediaElementSource( songElement[i] );
+							sound1.setRefDistance( 10 );
+							sound1.setVolume(2);
+							streetLamp.add( sound1 );
+
+
+						} );
+					}
+
+					//Group
+
+					scene.add(group_train);
+				
+
+					manager.onLoad = function ( ) {
+						console.log( 'Loading complete!');
+
+						const buttonLoading = document.getElementById('button_conf');
+						buttonLoading.innerHTML = 'jouer';
+						buttonLoading.disabled = false;
+					};
+
+
+					manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+						console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+						let css = document.getElementsByClassName('blocks');
+						const percent = Math.round(fileLoaded * 100 / ITEMS_MAX);
+						const index = Math.round( percent * 19 / 100);
+						css[index].style.background = 'white';
+						css[index].style.boxShadow = 'none';
+						fileLoaded++;
+
+						const buttonLoading = document.getElementById('button_conf');
+						buttonLoading.innerHTML = percent +'%';
+					};
+
+					manager.onError = function ( url ) {
+						console.log( 'There was an error loading ' + url );
+					};
+
+
+					renderer = new THREE.WebGLRenderer( { antialias: true } );
+					renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+					renderer.setPixelRatio( window.devicePixelRatio );
+					renderer.setSize( window.innerWidth, window.innerHeight );
+					renderer.shadowMap.enabled = true;
+					container.appendChild( renderer.domElement );
+
+
+					controls = new OrbitControls( camera, renderer.domElement );
+							
+					controls.target.set( 0, 0, 0 );
+					controls.update();
+					mod_view = 'orbital';
+
+
+
+					window.addEventListener( 'resize', onWindowResize );
+
+					// stats
+					stats = new Stats();
+					container.appendChild( stats.dom );
+
 
 			}
+
+
 
 			function onWindowResize() {
 
@@ -443,6 +571,8 @@
 				const camera_setting = gui.addFolder('Paramètres caméra');
 
 				const train_animation = gui.addFolder('Animations du train');
+
+				const light_settings = gui.addFolder('Paramètres lumières');
 
 
 				const params = {
@@ -471,7 +601,9 @@
 						animTrain = 3;
 						songElement[4].play();
 
-					}
+					},
+
+					'Mode nuit': false
 				};
 
 				camera_mode.add(params, 'Vue spectateur');
@@ -492,6 +624,8 @@
 				//Ouverture des dossiers 
 				camera_mode.open();
 				train_animation.open();
+
+				light_settings.add(params, 'Mode nuit').onChange(function (val) { ambient.intensity = val ? 0 : 1;});
 			}
 			//
 			
@@ -503,6 +637,7 @@
 			function animate() {
 
 				requestAnimationFrame( animate );
+
 
 				animationTrain(animTrain);
 				
@@ -543,6 +678,9 @@
 
 				controls.update( delta );
 				if ( mixer ) mixer.update( delta );
+				if (mixer_rasta) mixer_rasta.update(delta);
+		
+
 
 				renderer.render( scene, camera );
 
@@ -732,38 +870,40 @@
 				return clone;
 			}
 
+	
 			function animationTrain(mode) {
+				
 				switch(mode) {
 					case 1:
 						
-						if(train.position.x < -5000) {
-							train.position.x += 30;
+						if(group_train.position.x < -5000) {
+							group_train.position.x += 30;
 							songElement[3].play();
-						} else if(train.position.x < -2000) {
-							train.position.x += 15;
-						} else if(train.position.x < -800) {
-							train.position.x += 7;
-						} else if(train.position.x < 0) {
-							train.position.x += 3;
+						} else if(group_train.position.x < -2000) {
+							group_train.position.x += 15;
+						} else if(group_train.position.x < -800) {
+							group_train.position.x += 7;
+						} else if(group_train.position.x < 0) {
+							group_train.position.x += 3;
 						} else {
 							animTrain = 0;
 						}
 
 						break;
 					case 2:
-						if(train.position.x <= 30000) {
-							train.position.x += 80;
+						if(group_train.position.x <= 30000) {
+							group_train.position.x += 80;
 						} else {
 							animTrain = 0;
-							train.position.x = -30000
+							group_train.position.x = -30000
 						}
 						break;
 					case 3:
-						if(train.position.x < 40000) {
-							train.position.x += 100;
+						if(group_train.position.x < 40000) {
+							group_train.position.x += 100;
 						} else {
 							animTrain = 0;
-							train.position.x = -30000
+							group_train.position.x = -30000
 						}
 						break;
 					default:
