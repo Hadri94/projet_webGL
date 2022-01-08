@@ -73,8 +73,8 @@
 
 			let songElement = [];
 
-			let mixer, mixer_rasta;
-			let action_rasta;
+			let mixer, mixer_rasta, mixer_angry;
+			let action_rasta, action_angry;
 
 			let train, animTrain = 0;
 			const group_train = new THREE.Group();;
@@ -154,30 +154,33 @@
 					scene.add(ambient);
 
 				
-					let spotLight = new THREE.SpotLight( 0xFFDD81 );
-					spotLight.position.set(9000, 6000, -10000);
-					spotLight.intensity = 8;
-					spotLight.angle = 1;
-					spotLight.penumbra = 0.2;
-					spotLight.decay = 4;
-					spotLight.distance = 30000;
+					let spotLight = new THREE.DirectionalLight( 0xFFDD81, 0.75 );
+					spotLight.position.set(5000, 5000, 3000);
+
+					const d = 10000;
+
+					spotLight.shadow.camera.left = - d;
+					spotLight.shadow.camera.right = d;
+					spotLight.shadow.camera.top = d;
+					spotLight.shadow.camera.bottom = - d;
 
 					spotLight.castShadow = true;
 					spotLight.shadow.mapSize.width = 1024;
 					spotLight.shadow.mapSize.height = 1024;
-					spotLight.shadow.camera.near = 10;
-					spotLight.shadow.camera.far = 200;
+					spotLight.shadow.camera.near = 0.5;
+					spotLight.shadow.camera.far = 20000;
 
 					scene.add(spotLight);
+				
 					
 					// Lumières intérieures
 					for (let i = 0; i < 4; i++){
 						light[i] = new THREE.SpotLight(0xFFFFFF);
-						light[i].intensity = 3;
-						light[i].penumbra = 0.2;
-						light[i].focus = 0.2
-						light[i].decay = 1;
-						light[i].angle =  0.4;
+						light[i].intensity = 8;
+						light[i].penumbra = 0.5;
+						light[i].focus = 1
+						light[i].decay = 3;
+						light[i].angle =  1;
 						light[i].distance = 5000;
 					}
 
@@ -260,11 +263,7 @@
 					}
 
 					
-					//let lightHelper1 = new THREE.SpotLightHelper( headlight );
-					//scene.add( lightHelper1 );
 					
-					//let shadowCameraHelper1 = new THREE.CameraHelper( headlight.shadow.camera );
-					//scene.add( shadowCameraHelper1 );
 					
 
 
@@ -342,10 +341,35 @@
 
 						});
 
-						
-						rasta.position.set(2550,100,-700);
+						rasta.rotateY(135);
+						rasta.position.set(2250,110,720);
 						scene.add(rasta);
 						action_rasta.play();
+
+					});
+
+					//Angry
+
+					const angry_loader = new FBXLoader(manager).setPath('models/angry/');
+					angry_loader.load('angry.fbx', function (angry){
+
+						mixer_angry = new THREE.AnimationMixer(angry);
+						action_angry = mixer_angry.clipAction(angry.animations[0]);
+
+						angry.traverse(function(child){
+							
+							if (child.isMesh){
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+							}
+						});	
+
+						
+						angry.position.set(-1500,100, -650);
+						scene.add(angry);
+						action_angry.play();
 
 					});
 
@@ -401,25 +425,25 @@
 						group_train.add(obj);
 
 						const sound2 = new THREE.PositionalAudio( listener2 );
-						songElement[2] = document.getElementById( 'demarrage_train' );
-						sound2.setMediaElementSource( songElement[2] );
-						sound2.setRefDistance( 100 );
-						sound2.setVolume(5);
-						obj.add( sound2 );
+                        songElement[2] = document.getElementById( 'demarrage_train' );
+                        sound2.setMediaElementSource( songElement[2] );
+                        sound2.setRefDistance( 100 );
+                        sound2.setVolume(10);
+                        obj.add( sound2 );
 
-						const sound3 = new THREE.PositionalAudio( listener2 );
-						songElement[3] = document.getElementById( 'arriver_train' );
-						sound3.setMediaElementSource( songElement[3] );
-						sound3.setRefDistance( 100 );
-						sound3.setVolume(5);
-						obj.add( sound3 );
+                        const sound3 = new THREE.PositionalAudio( listener2 );
+                        songElement[3] = document.getElementById( 'arriver_train' );
+                        sound3.setMediaElementSource( songElement[3] );
+                        sound3.setRefDistance( 200 );
+                        sound3.setVolume(15);
+                        obj.add( sound3 );
 
-						const sound4 = new THREE.PositionalAudio( listener2 );
-						songElement[4] = document.getElementById( 'sans_arret_train' );
-						sound4.setMediaElementSource( songElement[4] );
-						sound4.setRefDistance( 100 );
-						sound4.setVolume(5);
-						obj.add( sound4 );
+                        const sound4 = new THREE.PositionalAudio( listener2 );
+                        songElement[4] = document.getElementById( 'sans_arret_train' );
+                        sound4.setMediaElementSource( songElement[4] );
+                        sound4.setRefDistance( 300 );
+                        sound4.setVolume(20);
+                        obj.add( sound4 );
 
 					} );
 
@@ -541,7 +565,7 @@
 					controls.update();
 					mod_view = 'orbital';
 
-
+					
 
 					window.addEventListener( 'resize', onWindowResize );
 
@@ -586,22 +610,24 @@
 					'Mode vertical': true,
 
 					'Entrée en gare': function() { 
-						songElement[0].play(); 
-						songElement[1].play();  
+                        songElement[0].play(); 
+                        songElement[1].play();  
 
-						setTimeout(function() {
-							animTrain = 1;
-						}, 10000);
-					},
-					'Sortie en gare': function() { 
-						animTrain = 2;
-						songElement[2].play();
-					},
-					'Train sans arret': function() { 
-						animTrain = 3;
-						songElement[4].play();
-
-					},
+                        setTimeout(function() {
+                            animTrain = 1;
+                        }, 10000);
+                    },
+                    'Sortie en gare': function() { 
+                        songElement[2].play();
+                        
+                        setTimeout(function() {
+                            animTrain = 2;
+                        }, 1200);
+                    },
+                    'Train sans arret': function() { 
+                        animTrain = 3;
+                        songElement[4].play();
+                    },
 
 					'Mode nuit': false
 				};
@@ -679,6 +705,7 @@
 				controls.update( delta );
 				if ( mixer ) mixer.update( delta );
 				if (mixer_rasta) mixer_rasta.update(delta);
+				if (mixer_angry) mixer_angry.update(delta);
 		
 
 
@@ -872,46 +899,49 @@
 
 	
 			function animationTrain(mode) {
-				
-				switch(mode) {
-					case 1:
-						
-						if(group_train.position.x < -5000) {
-							group_train.position.x += 30;
-							songElement[3].play();
-						} else if(group_train.position.x < -2000) {
-							group_train.position.x += 15;
-						} else if(group_train.position.x < -800) {
-							group_train.position.x += 7;
-						} else if(group_train.position.x < 0) {
-							group_train.position.x += 3;
-						} else {
-							animTrain = 0;
-						}
+                
+                switch(mode) {
+                    case 1:
+                        
+                        if(group_train.position.x < -5000) {
+                            group_train.position.x += 30;
+                            songElement[3].play();
+                        } else if(group_train.position.x < -2000) {
+                            group_train.position.x += 15;
+                        } else if(group_train.position.x < -800) {
+                            group_train.position.x += 7;
+                        } else if(group_train.position.x < 0) {
+                            group_train.position.x += 3;
+                        } else {
+                            animTrain = 0;
+                        }
 
-						break;
-					case 2:
-						if(group_train.position.x <= 30000) {
-							group_train.position.x += 80;
-						} else {
-							animTrain = 0;
-							group_train.position.x = -30000
-						}
-						break;
-					case 3:
-						if(group_train.position.x < 40000) {
-							group_train.position.x += 100;
-						} else {
-							animTrain = 0;
-							group_train.position.x = -30000
-						}
-						break;
-					default:
-						
-						break;
-				}
-				
-			}
+                        break;
+                    case 2:
+                        if(group_train.position.x < 40000) {
+                            group_train.position.x += 50;
+                        } else if(group_train.position.x <= 5000) {
+                            group_train.position.x += 80;
+                        } else {
+                            animTrain = 0;
+                            group_train.position.x = -30000
+                        }
+                        break;
+                    case 3:
+                        if(group_train.position.x < 40000) {
+                            group_train.position.x += 100;
+                        } else {
+                            animTrain = 0;
+                            group_train.position.x = -30000
+                        }
+                        break;
+                    default:
+                        
+                        break;
+                }
+                
+            }
+		
 
 
 			init();
