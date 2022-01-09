@@ -64,7 +64,7 @@
 			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 			import { RGBELoader } from './jsm/loaders/RGBELoader.js';
 
-			const ITEMS_MAX = 50;
+			const ITEMS_MAX = 48;
 
             let camera, scene, controls, renderer, stats;
 			let gui;
@@ -264,6 +264,7 @@
 
 					
 					
+					scene.background = new THREE.Color(0x87CEEB);
 					
 
 
@@ -367,7 +368,7 @@
 						});	
 
 						
-						angry.position.set(-1500,100, -650);
+						angry.position.set(-1500,90, -650);
 						scene.add(angry);
 						action_angry.play();
 
@@ -651,7 +652,7 @@
 				camera_mode.open();
 				train_animation.open();
 
-				light_settings.add(params, 'Mode nuit').onChange(function (val) { ambient.intensity = val ? 0 : 1;});
+				light_settings.add(params, 'Mode nuit').onChange(function (val) { ambient.intensity = val ? 0 : 1; scene.background = val ? new THREE.Color(0x000000) : new THREE.Color(0x87CEEB);  });
 			}
 			//
 			
